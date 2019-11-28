@@ -1,0 +1,1 @@
+Supervised learning deals with classification and clustring. Association is fun too.

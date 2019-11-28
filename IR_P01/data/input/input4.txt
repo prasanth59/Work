@@ -1,0 +1,2 @@
+World is never perfect. Nothing stays the same forever
+Supervised learning deals with classification and clustring. Association is fun too.

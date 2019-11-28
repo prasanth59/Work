@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="D:/Edu/IR/IR_P01/lib/jsoup-1.12.1.jar"/>
+	<classpathentry kind="lib" path="D:/Edu/IR/IR_P01/lib/lucene-analyzers-common-8.3.0.jar"/>
+	<classpathentry kind="lib" path="D:/Edu/IR/IR_P01/lib/lucene-core-8.3.0.jar"/>
+	<classpathentry kind="lib" path="D:/Edu/IR/IR_P01/lib/lucene-queryparser-8.3.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
