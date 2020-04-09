@@ -1,0 +1,110 @@
+#Setting the working directory
+
+setwd("G:/Decison Tree")
+gc()
+rm(list=ls())
+
+#Reading data in R memory
+train_data=read.csv("G:/Decison Tree/Train_Data.csv")
+valid_data=read.csv("G:/Decison Tree/Validate_data.csv")
+test_data=read.csv("G:/Decison Tree/Test_Data.csv")
+
+#Checking the structure of the data
+str(train_data)
+head(train_data)
+summary(train_data)
+
+summary(valid_data)
+summary(test_data)
+
+#no NA's in the data
+
+#plot the data
+plot(train_data$protocol_type,train_data$class,xlab="Protocol",ylab="Class",
+     main="Protocol vs Class",col=c("green","red"))
+
+plot(train_data$service,train_data$class,xlab="Service",ylab="Class",
+     main="Service vs Class",col=c("green","red"))
+
+plot(train_data$flag,train_data$class,xlab="Flag",ylab="Class",
+     main="Flag vs Class",col=c("green","red"))
+
+plot(as.factor(train_data$logged_in),train_data$class,xlab="Login status",ylab="Class",
+     main="Login status vs Class",col=c("green","red"))
+
+plot(as.factor(train_data$is_host_login),train_data$class,xlab="Host Login",ylab="Class",
+     main="Host Login status vs Class",col=c("green","red"))
+
+
+#Fit Decision Tree model on training data
+set.seed(8)
+library(rpart)
+model_dtree=rpart(class~.,data=train_data,method="class")
+
+model_dtree
+
+#plot decision tree
+plot(model_dtree,margin = 0.1)
+text(model_dtree,use.n = T,pretty = T,cex=1)
+
+#See the plot and try to prune the model using optimal cp values
+library(rpart.plot)
+library(RColorBrewer)
+
+prp(model_dtree)
+printcp(model_dtree) #prints the cp value for the decision tree
+
+model_dt_2=prune(model_dtree,cp= 0.019927)
+prp(model_dt_2,cex=0.8,extra=1)
+
+#predict for test data
+levels(valid_data$service)=levels(train_data$service)
+levels(test_data$service)=levels(train_data$service)
+predic=predict(model_dt_2,newdata=valid_data,type="class")
+predic
+
+table(valid_data$class,predic)
+Accuracy=(9089+9233)/(9089+9233+478+3744)
+
+#Save the predictions
+predic=predict(model_dt_2,newdata=test_data,type="class")
+predic
+results<-data.frame(Duration=test_data$duration,Protocol_type=test_data$protocol_type,
+                    Service=test_data$service,Flag=test_data$flag,Class=predic)
+
+write.csv(results,file="Predictions.csv",row.names = F)
+
+
+
+#implementing Random forest Algorithm
+
+library(randomForest)
+set.seed(300)
+model_rf=randomForest(class~.,data=train_data,method="class")
+
+#Use random forest for training data
+train_data$service=as.numeric(train_data$service)
+model_rf=randomForest(class~.,data=train_data,method="class")
+
+summary(model_rf)
+model_rf
+
+#use RF for validation data
+service=valid_data$service
+valid_data$service=as.numeric(valid_data$service)
+predic=predict(model_rf,newdata=valid_data,type="class")
+
+predic
+
+table(valid_data$class,predic)
+acc=(8161+9437)/(8161+9437+274+4672)
+
+#Variable importance
+
+varImpPlot(model_rf)
+
+#Save the predictions
+RFresults<-data.frame(Duration=test_data$duration,Protocol_type=test_data$protocol_type,
+                    Service=service,Flag=test_data$flag,Class=predic)
+
+write.csv(RFresults,file="RandomForest_Predictions.csv",row.names = F)
