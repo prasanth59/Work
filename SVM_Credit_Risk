@@ -1,0 +1,191 @@
+#set the working directory
+setwd("G:/Imarticus_R/SVM Handson")
+
+
+#Clear the objects in the workspace
+gc()
+rm(list=ls())
+
+#Reading data in R memory (training, validation and testing datasets)
+train_data=read.csv("G:/Imarticus_R/SVM Handson/Train_Data.csv",na.strings ="")
+valid_data=read.csv("G:/Imarticus_R/SVM Handson/Validate_data.csv",na.strings ="")
+test_data=read.csv("G:/Imarticus_R/SVM Handson/Test_Data.csv",na.strings ="")
+
+#Checking the structure of the data
+str(train_data)
+head(train_data)
+summary(train_data)
+
+#Checking whether all the attributes are numeric in nature or not, if not then convert them to numeric
+summary(validate_data)
+
+#Replace NA's with mode and median
+
+table(train_data$Gender)
+train_data[which(is.na(train_data$Gender)),"Gender"]="Male"
+
+table(train_data$Married)
+train_data[which(is.na(train_data$Married)),"Married"]="Yes"
+
+table(train_data$Dependents)
+train_data[which(is.na(train_data$Dependents)),"Dependents"]="0"
+
+table(train_data$Education)
+train_data[which(is.na(train_data$Education)),"Education"]="Graduate"
+
+table(train_data$Self_Employed)
+train_data[which(is.na(train_data$Self_Employed)),"Self_Employed"]="No"
+
+train_data[which(is.na(train_data$LoanAmount)),"LoanAmount"]=median(train_data$LoanAmount,na.rm=T)
+
+train_data[which(is.na(train_data$Loan_Amount_Term)),"Loan_Amount_Term"]=median(train_data$Loan_Amount_Term,na.rm=T)
+
+train_data[which(is.na(train_data$Credit_History)),"Credit_History"]="1"
+
+#Perform the imputations on valid_data
+
+table(valid_data$Gender)
+valid_data[which(is.na(valid_data$Gender)),"Gender"]="Male"
+
+table(valid_data$Married)
+valid_data[which(is.na(valid_data$Married)),"Married"]="Yes"
+
+table(valid_data$Dependents)
+valid_data[which(is.na(valid_data$Dependents)),"Dependents"]="0"
+
+table(valid_data$Self_Employed)
+valid_data[which(is.na(valid_data$Self_Employed)),"Self_Employed"]="No"
+
+
+valid_data[which(is.na(valid_data$LoanAmount)),"LoanAmount"]=median(valid_data$LoanAmount,na.rm=T)
+
+valid_data[which(is.na(valid_data$Loan_Amount_Term)),"Loan_Amount_Term"]=median(valid_data$Loan_Amount_Term,na.rm=T)
+
+valid_data[which(is.na(valid_data$Credit_History)),"Credit_History"]="1"
+
+#Imputation on test_data
+table(test_data$Gender)
+test_data[which(is.na(test_data$Gender)),"Gender"]="Male"
+
+table(test_data$Married)
+test_data[which(is.na(test_data$Married)),"Married"]="Yes"
+
+table(test_data$Dependents)
+test_data[which(is.na(test_data$Dependents)),"Dependents"]="0"
+
+table(test_data$Self_Employed)
+test_data[which(is.na(test_data$Self_Employed)),"Self_Employed"]="No"
+
+
+test_data[which(is.na(test_data$LoanAmount)),"LoanAmount"]=median(test_data$LoanAmount,na.rm=T)
+
+test_data[which(is.na(test_data$Loan_Amount_Term)),"Loan_Amount_Term"]=median(test_data$Loan_Amount_Term,na.rm=T)
+
+test_data[which(is.na(test_data$Credit_History)),"Credit_History"]="1"
+
+#plotting the data
+plot(train_data$Gender,train_data$Loan_Status, xlab = "Gender", ylab = "Loan Status", col = c("red","green"), main = "Gender impact on Loan Status")
+plot(train_data$Married,train_data$Loan_Status, xlab = "Marital Status", ylab = "Loan Status", col = c("red","green"), main = "Marital Status impact on Loan Status")
+plot(train_data$Dependents,train_data$Loan_Status, xlab = "Number of Dependents", ylab = "Loan Status", col = c("red","green"), main = "No. of Dependents impact on Loan Status")
+plot(train_data$Education,train_data$Loan_Status, xlab = "Education Status", ylab = "Loan Status", col = c("red","green"), main = "Education impact on Loan Status")
+plot(train_data$Self_Employed,train_data$Loan_Status, xlab = "Self Employment Status", ylab = "Loan Status", col = c("red","green"), main = "Self-Employment impact on Loan Status")
+
+boxplot(train_data$ApplicantIncome~train_data$Loan_Status,xlab = "Loan Status",ylab = "Applicant Income", col = c("red","green"))
+boxplot(train_data$CoapplicantIncome~train_data$Loan_Status,xlab = "Loan Status",ylab = "Co-Applicant Income", col = c("red","green"), main = "Co-Applicant's Income impact on Loan Status")
+boxplot(train_data$LoanAmount~train_data$Loan_Status,xlab = "Loan Status",ylab = "Loan Amount", col = c("red","green"), main = "Loan Amount impact on Loan Status")
+plot(as.factor(train_data$Loan_Amount_Term),train_data$Loan_Status,xlab = "Loan Amount Term",ylab = "Loan Status", col = c("red","green"), main = "Loan Amount Term impact on Loan Status")
+plot(as.factor(train_data$Credit_History),train_data$Loan_Status,xlab = "Credit History",ylab = "Loan Status", col = c("red","green"), main = "Credit History impact on Loan Status")
+plot(train_data$Property_Area,train_data$Loan_Status,xlab = "Property Area",ylab = "Loan Status", col = c("red","green"), main = "Property Area impact on Loan Status")
+
+library(e1071)
+model_svm1=svm(Loan_Status~.-Loan_ID,data=train_data,kernel="linear")
+summary(model_svm1)
+
+pred=predict(model_svm1,newdata = valid_data)
+pred
+table(valid_data$outcome,pred)
+Accuracy=(58+289)/(78+289)
+
+
+#Convert variables to numeric if they are not numeric for test_data
+ 
+train_data$Gender=as.numeric(ifelse(train_data$Gender=="Male",1,0))
+train_data$Married=as.numeric(ifelse(train_data$Married=="Yes",1,0))
+train_data$Education=as.numeric(ifelse(train_data$Education=="Graduate",1,0))
+train_data$Self_Employed=as.numeric(ifelse(train_data$Self_Employed=="Yes",1,0))
+
+train_data$Property_Rural=as.numeric(ifelse(train_data$Property_Area=="Rural",1,0))
+train_data$Property_Urban=as.numeric(ifelse(train_data$Property_Area=="Urban",1,0))
+
+train_data$Dependents=as.numeric(ifelse(train_data$Dependents=="+3",3,train_data$Dependents))
+
+train_data$Credit_History=as.numeric(train_data$Credit_History)
+train_data$Loan_ID=NULL
+train_data$Property_Area=NULL
+str(train_data)
+
+#convert variables to numeric if they are non-numeric for test data
+test_data$Gender=as.numeric(ifelse(test_data$Gender=="Male",1,0))
+test_data$Married=as.numeric(ifelse(test_data$Married=="Yes",1,0))
+test_data$Education=as.numeric(ifelse(test_data$Education=="Graduate",1,0))
+
+test_data$Self_Employed=as.numeric(ifelse(test_data$Self_Employed=="Yes",1,0))
+
+test_data$Property_Rural=as.numeric(ifelse(test_data$Property_Area=="Rural",1,0))
+
+test_data$Property_Urban=as.numeric(ifelse(test_data$Property_Area=="Urban",1,0))
+
+
+test_data$Dependents=as.numeric(ifelse(test_data$Dependents=="+3",3,test_data$Dependents))
+test_data$Credit_History=as.numeric(test_data$Credit_History)
+
+
+test_data$Property_Area=NULL
+str(test_data)
+
+#convert variables to numeric if they are non-numeric for validation data
+valid_data$Gender=as.numeric(ifelse(valid_data$Gender=="Male",1,0))
+valid_data$Married=as.numeric(ifelse(valid_data$Married=="Yes",1,0))
+valid_data$Education=as.numeric(ifelse(valid_data$Education=="Graduate",1,0))
+
+valid_data$Self_Employed=as.numeric(ifelse(valid_data$Self_Employed=="Yes",1,0))
+
+valid_data$Property_Rural=as.numeric(ifelse(valid_data$Property_Area=="Rural",1,0))
+
+valid_data$Property_Urban=as.numeric(ifelse(valid_data$Property_Area=="Urban",1,0))
+
+valid_data$Dependents=as.numeric(ifelse(valid_data$Dependents=="+3",3,valid_data$Dependents))
+valid_data$Credit_History=as.numeric(valid_data$Credit_History)
+
+valid_data$Loan_ID=NULL
+valid_data$Property_Area=NULL
+str(valid_data)
+
+#Fir SVM on training data
+
+model_svm1=svm(Loan_Status~.,data=train_data,kernel="linear",cost=0.5,gamma=0.05)
+summary(model_svm1)
+
+pred=predict(model_svm1,newdata = valid_data)
+pred
+
+table(valid_data$outcome,pred)
+Accuracy=(58+289)/(58+1+19+289) #0.9455041
+
+#using other svm
+library(caret)
+
+model_svm2=train(train_data[,c(1:10,12,13)],train_data$Loan_Status,method="svmLinear")
+summary(model_svm2)
+
+model_svm2
+
+predic=predict(model_svm2,newdata = valid_data[,c(1:10,12,13)])
+predic
+confusionMatrix(valid_data$outcome,predic)
+
+#save predictions for training set
+predic=predict(model_svm1,newdata =test_data)
+predic
+results=data.frame(Loan_ID=test_data$Loan_ID,Predicted_Loan_Status=predic)
+write.csv(results,"Predictions.csv",row.names = F)
